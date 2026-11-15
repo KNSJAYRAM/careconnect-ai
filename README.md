@@ -185,12 +185,3 @@ To test all protected dashboard features immediately, use the pre-seeded demo us
 > - Make autonomous treatment decisions
 > 
 > AI functionality is restricted to text organization, plain-language document summarization, appointment preparation, and healthcare workflow navigation. Prominent safety disclaimers are enforced across all AI views.
-
----
-
-## 🎓 9. Project Attribution
-
-- **Project:** CareConnect AI (Individual B.Tech CSE Project)
-- **Institution:** SRM University AP
-- **Department:** Computer Science & Engineering
-- **Author:** Jayram Kumar
