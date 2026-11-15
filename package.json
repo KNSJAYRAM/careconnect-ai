@@ -1,0 +1,31 @@
+{
+  "name": "careconnect-ai",
+  "version": "1.0.0",
+  "description": "CareConnect AI - AI-Powered Healthcare Navigation & Patient Support Platform",
+  "scripts": {
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,magenta\" \"npm run server\" \"npm run client\"",
+    "start": "npm run dev",
+    "build": "npm --prefix client run build",
+    "install-all": "npm install && cd client && npm install --legacy-peer-deps && cd ../server && npm install",
+    "client": "npm --prefix client run dev",
+    "server": "npm --prefix server run dev",
+    "seed": "npm --prefix server run seed",
+    "lint": "npm --prefix client run lint",
+    "test": "npm --prefix server run test",
+    "test:models": "npm --prefix server run test:models"
+  },
+  "keywords": [
+    "healthcare",
+    "patient-support",
+    "ai",
+    "fullstack",
+    "react",
+    "express",
+    "mongodb"
+  ],
+  "author": "CareConnect AI Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}
