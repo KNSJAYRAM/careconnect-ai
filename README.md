@@ -147,9 +147,6 @@ To test all protected dashboard features immediately, use the pre-seeded demo us
 - **Email:** `jayram@example.com`
 - **Password:** `password123`
 
-*(Alternatively, use the "Fill Demo" button on the `/login` page for one-click authentication!)*
-
----
 
 ## 🔌 7. REST API Architecture Overview
 
