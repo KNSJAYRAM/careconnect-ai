@@ -16,8 +16,44 @@ const Settings = () => {
   const [passForm, setPassForm] = useState({ currentPass: '', newPass: '', confirmPass: '' });
   const [updatingPass, setUpdatingPass] = useState(false);
 
-  // AI Preference
-  const [aiEngine, setAiEngine] = useState('Gemini API (Auto-fallback to Smart Engine)');
+  // Notification & AI Preferences (Persisted in localStorage)
+  const [preferences, setPreferences] = useState(() => {
+    try {
+      const saved = localStorage.getItem('careconnect_settings');
+      return saved ? JSON.parse(saved) : {
+        appointmentReminders: true,
+        followupAlerts: true,
+        summaryNotifications: true,
+        aiEngine: 'Gemini API (Auto-fallback to Smart Engine)'
+      };
+    } catch {
+      return {
+        appointmentReminders: true,
+        followupAlerts: true,
+        summaryNotifications: true,
+        aiEngine: 'Gemini API (Auto-fallback to Smart Engine)'
+      };
+    }
+  });
+
+  const handleTogglePreference = (key) => {
+    setPreferences(prev => {
+      const updated = { ...prev, [key]: !prev[key] };
+      localStorage.setItem('careconnect_settings', JSON.stringify(updated));
+      addToast('Notification preference saved', 'info');
+      return updated;
+    });
+  };
+
+  const handleAiEngineChange = (val) => {
+    setPreferences(prev => {
+      const updated = { ...prev, aiEngine: val };
+      localStorage.setItem('careconnect_settings', JSON.stringify(updated));
+      addToast('AI processing preference saved', 'info');
+      return updated;
+    });
+  };
+
   // Delete Modal
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -164,21 +200,36 @@ const Settings = () => {
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
-              <input type="checkbox" defaultChecked style={{ width: '18px', height: '18px' }} />
+              <input
+                type="checkbox"
+                checked={preferences.appointmentReminders}
+                onChange={() => handleTogglePreference('appointmentReminders')}
+                style={{ width: '18px', height: '18px' }}
+              />
               <div>
                 <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Appointment Reminders</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Receive alerts prior to scheduled clinic consultations.</div>
               </div>
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
-              <input type="checkbox" defaultChecked style={{ width: '18px', height: '18px' }} />
+              <input
+                type="checkbox"
+                checked={preferences.followupAlerts}
+                onChange={() => handleTogglePreference('followupAlerts')}
+                style={{ width: '18px', height: '18px' }}
+              />
               <div>
                 <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>Follow-up Task Alerts</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Alert when post-consultation tasks are near due date or overdue.</div>
               </div>
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
-              <input type="checkbox" defaultChecked style={{ width: '18px', height: '18px' }} />
+              <input
+                type="checkbox"
+                checked={preferences.summaryNotifications}
+                onChange={() => handleTogglePreference('summaryNotifications')}
+                style={{ width: '18px', height: '18px' }}
+              />
               <div>
                 <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>AI Summary Notifications</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Notify when plain-language document breakdowns are processed.</div>
@@ -213,7 +264,7 @@ const Settings = () => {
           </h3>
           <div className="form-group" style={{ maxWidth: '500px' }}>
             <label className="form-label">Preferred AI Processing Mode</label>
-            <select className="form-select" value={aiEngine} onChange={(e) => setAiEngine(e.target.value)}>
+            <select className="form-select" value={preferences.aiEngine} onChange={(e) => handleAiEngineChange(e.target.value)}>
               <option value="Gemini API (Auto-fallback to Smart Engine)">Gemini LLM API (Auto-fallback to Smart Engine)</option>
               <option value="OpenAI Compatible LLM Endpoint">OpenAI Compatible LLM Endpoint</option>
               <option value="Offline Smart Mock Service">Offline Smart Mock Service (Zero Network Calls)</option>

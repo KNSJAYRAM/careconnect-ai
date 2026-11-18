@@ -9,7 +9,9 @@
     "dev": "node --watch server.js",
     "seed": "node utils/seed.js",
     "test": "node test/run_tests.js",
-    "test:models": "node test/test_models.js"
+    "test:models": "node test/test_models.js",
+    "test:ai": "node test/test_ai_integration.js",
+    "test:e2e": "node test/test_comprehensive_e2e.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

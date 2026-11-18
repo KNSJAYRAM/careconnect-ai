@@ -12,7 +12,9 @@
     "seed": "npm --prefix server run seed",
     "lint": "npm --prefix client run lint",
     "test": "npm --prefix server run test",
-    "test:models": "npm --prefix server run test:models"
+    "test:models": "npm --prefix server run test:models",
+    "test:ai": "npm --prefix server run test:ai",
+    "test:e2e": "npm --prefix server run test:e2e"
   },
   "keywords": [
     "healthcare",

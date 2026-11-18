@@ -36,6 +36,18 @@ const Notifications = () => {
     addToast('All notifications marked as read', 'info');
   };
 
+  const handleToggleRead = (id, e) => {
+    e.stopPropagation();
+    setNotifications(prev => prev.map(n => {
+      if (n.id === id) {
+        const nextState = !n.unread;
+        addToast(nextState ? 'Marked as unread' : 'Marked as read', 'info');
+        return { ...n, unread: nextState };
+      }
+      return n;
+    }));
+  };
+
   const handleClearAll = () => {
     setNotifications([]);
     addToast('Notifications cleared', 'info');
@@ -91,6 +103,9 @@ const Notifications = () => {
                 cursor: n.link ? 'pointer' : 'default'
               }}
               onClick={() => {
+                if (n.unread) {
+                  setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, unread: false } : item));
+                }
                 if (n.link) navigate(n.link);
               }}
             >
@@ -110,7 +125,26 @@ const Notifications = () => {
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
                   <h4 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)' }}>{n.title}</h4>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)' }}>{n.time}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <button
+                      type="button"
+                      onClick={(e) => handleToggleRead(n.id, e)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--color-brand-600)',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        padding: '0.2rem 0.4rem',
+                        borderRadius: 'var(--radius-sm)'
+                      }}
+                      title={n.unread ? "Mark as read" : "Mark as unread"}
+                    >
+                      {n.unread ? "Mark as Read" : "Mark Unread"}
+                    </button>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-subtle)' }}>{n.time}</span>
+                  </div>
                 </div>
                 <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{n.desc}</p>
               </div>
