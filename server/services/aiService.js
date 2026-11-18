@@ -3,11 +3,15 @@ export const summarizeDocument = async ({ name, type, description, contentSnippe
   const docName = name ? name.trim() : 'Medical Record';
   const docType = type || 'Blood Test';
 
-  if (apiKey) {
+  if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0) {
     try {
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey, {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey.trim()), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           contents: [{
             parts: [{
@@ -27,6 +31,8 @@ overview (string), keyInfo (array of strings), importantValues (array of strings
         })
       });
 
+      clearTimeout(timeoutId);
+
       if (response.ok) {
         const data = await response.json();
         const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -37,21 +43,34 @@ overview (string), keyInfo (array of strings), importantValues (array of strings
               const parsed = JSON.parse(jsonMatch[0]);
               return {
                 ...parsed,
+                source: 'gemini_api',
+                isFallback: false,
                 disclaimer: 'AI-generated summaries are for informational purposes only and should not be considered medical advice, diagnosis, or treatment.'
               };
             } catch (parseErr) {
-              console.warn('AI API JSON parse warning, falling back to smart mock:', parseErr.message);
+              console.warn('AI API JSON parse warning, falling back to smart engine:', parseErr.message);
             }
           }
         }
+      } else {
+        console.warn(`Gemini API returned unsuccessful status ${response.status}. Falling back to deterministic engine.`);
       }
     } catch (err) {
-      console.warn('AI API call failed or timed out. Falling back to Mock AI Service:', err.message);
+      if (err.name === 'AbortError') {
+        console.warn('Gemini API call timed out after 8000ms. Falling back to deterministic engine.');
+      } else {
+        console.warn('Gemini API request failed. Falling back to deterministic engine:', err.message);
+      }
     }
   }
 
-  // Fallback / Smart Mock AI Service
-  return generateMockDocumentSummary(docName, docType, description, contentSnippet);
+  // Deterministic Fallback Engine
+  const fallback = generateMockDocumentSummary(docName, docType, description, contentSnippet);
+  return {
+    ...fallback,
+    source: 'deterministic_fallback',
+    isFallback: true
+  };
 };
 
 export const generateAppointmentQuestions = async ({ providerName, specialty, reason, notes, healthConcerns }) => {
@@ -60,11 +79,15 @@ export const generateAppointmentQuestions = async ({ providerName, specialty, re
   const spec = specialty || 'General Physician';
   const rsn = reason || 'Consultation';
 
-  if (apiKey) {
+  if (apiKey && typeof apiKey === 'string' && apiKey.trim().length > 0) {
     try {
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey, {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + encodeURIComponent(apiKey.trim()), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           contents: [{
             parts: [{
@@ -82,6 +105,8 @@ Return JSON with fields: questionsToAsk (array of strings), infoToBring (array o
         })
       });
 
+      clearTimeout(timeoutId);
+
       if (response.ok) {
         const data = await response.json();
         const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -89,19 +114,35 @@ Return JSON with fields: questionsToAsk (array of strings), infoToBring (array o
           const jsonMatch = rawText.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             try {
-              return JSON.parse(jsonMatch[0]);
+              const parsed = JSON.parse(jsonMatch[0]);
+              return {
+                ...parsed,
+                source: 'gemini_api',
+                isFallback: false
+              };
             } catch (pErr) {
               console.warn('JSON parse warning for appointment questions:', pErr.message);
             }
           }
         }
+      } else {
+        console.warn(`Gemini API returned unsuccessful status ${response.status} for appointment questions.`);
       }
     } catch (err) {
-      console.warn('AI API call failed. Using Mock AI for appointment prep:', err.message);
+      if (err.name === 'AbortError') {
+        console.warn('Gemini appointment questions call timed out. Falling back to deterministic engine.');
+      } else {
+        console.warn('Gemini appointment questions request failed. Falling back to deterministic engine:', err.message);
+      }
     }
   }
 
-  return generateMockAppointmentPrep(pName, spec, rsn, notes, healthConcerns);
+  const fallbackPrep = generateMockAppointmentPrep(pName, spec, rsn, notes, healthConcerns);
+  return {
+    ...fallbackPrep,
+    source: 'deterministic_fallback',
+    isFallback: true
+  };
 };
 
 export const organizeHealthInformation = async ({ query }) => {
@@ -150,11 +191,13 @@ export const organizeHealthInformation = async ({ query }) => {
     category,
     guidance,
     suggestedSteps,
+    source: 'healthcare_navigation_engine',
+    isFallback: false,
     disclaimer: 'CareConnect AI provides informational guidance only. It does not diagnose medical conditions, recommend treatment changes, or replace professional advice from a licensed physician.'
   };
 };
 
-// Smart Mock Generators
+// Smart Mock / Deterministic Fallback Generators
 function generateMockDocumentSummary(name, type, description, snippet) {
   const isBloodTest = type.toLowerCase().includes('blood') || name.toLowerCase().includes('blood') || name.toLowerCase().includes('cbc');
   const isScan = type.toLowerCase().includes('scan') || name.toLowerCase().includes('mri') || name.toLowerCase().includes('x-ray') || name.toLowerCase().includes('ultrasound');

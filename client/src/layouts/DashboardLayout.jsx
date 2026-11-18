@@ -63,7 +63,9 @@ const DashboardLayout = () => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    const target = location.pathname + location.search;
+    const redirectParam = target && target !== '/' ? `?redirect=${encodeURIComponent(target)}` : '';
+    return <Navigate to={`/login${redirectParam}`} replace />;
   }
 
   return (

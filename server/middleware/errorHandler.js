@@ -7,7 +7,9 @@ export const errorHandler = (err, req, res, _next) => {
     message = `Invalid ID format: ${err.value}`;
   } else if (err.code === 11000) {
     statusCode = 400;
-    message = 'Duplicate field value entered. Please choose another value.';
+    message = err.keyPattern?.email
+      ? 'User with this email already exists'
+      : 'Duplicate field value entered. Please choose another value.';
   } else if (err.name === 'ValidationError') {
     statusCode = 400;
     message = Object.values(err.errors).map(val => val.message).join(', ');
@@ -19,8 +21,13 @@ export const errorHandler = (err, req, res, _next) => {
     message = 'Authentication token expired';
   }
 
-  res.status(statusCode).json({
-    message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
-  });
+  const responsePayload = {
+    message
+  };
+
+  if (process.env.NODE_ENV !== 'production' && err.stack) {
+    responsePayload.stack = err.stack;
+  }
+
+  res.status(statusCode).json(responsePayload);
 };

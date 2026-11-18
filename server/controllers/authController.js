@@ -12,22 +12,30 @@ const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res, next) => {
   try {
     const { name, email, password, dob, phone } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || typeof name !== 'string' || !name.trim()) {
       return res.status(400).json({ message: 'Please provide name, email and password' });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
+    if (!email || typeof email !== 'string' || !email.trim()) {
+      return res.status(400).json({ message: 'Please provide name, email and password' });
+    }
+
+    if (!password || typeof password !== 'string') {
+      return res.status(400).json({ message: 'Please provide name, email and password' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
 
     if (!isValidEmail(cleanEmail)) {
       return res.status(400).json({ message: 'Please provide a valid email address' });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
     if (req.app.locals.useMemoryDb) {
@@ -92,11 +100,12 @@ export const registerUser = async (req, res) => {
       token: generateToken(user._id)
     });
   } catch (error) {
+    if (next) return next(error);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const loginUser = async (req, res) => {
+export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -147,11 +156,12 @@ export const loginUser = async (req, res) => {
       res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (error) {
+    if (next) return next(error);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const getMe = async (req, res) => {
+export const getMe = async (req, res, next) => {
   try {
     const user = req.user;
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -159,11 +169,12 @@ export const getMe = async (req, res) => {
     const { password: _, ...userWithoutPassword } = userObj;
     res.json(userWithoutPassword);
   } catch (error) {
+    if (next) return next(error);
     res.status(500).json({ message: error.message });
   }
 };
 
-export const changePassword = async (req, res) => {
+export const changePassword = async (req, res, next) => {
   try {
     const userId = req.user._id;
     const { currentPassword, newPassword } = req.body;
@@ -203,6 +214,7 @@ export const changePassword = async (req, res) => {
     await user.save();
     res.json({ message: 'Password updated successfully' });
   } catch (error) {
+    if (next) return next(error);
     res.status(500).json({ message: error.message });
   }
 };

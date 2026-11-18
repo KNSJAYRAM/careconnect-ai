@@ -13,6 +13,7 @@ import timelineRoutes from '../routes/timelineRoutes.js';
 import dashboardRoutes from '../routes/dashboardRoutes.js';
 import aiRoutes from '../routes/aiRoutes.js';
 import notificationsRoutes from '../routes/notificationsRoutes.js';
+import { summarizeDocument, generateAppointmentQuestions } from '../services/aiService.js';
 import { errorHandler } from '../middleware/errorHandler.js';
 
 const app = express();
@@ -185,6 +186,19 @@ async function run() {
     assert(res.status === 400, `Expected 400, got ${res.status}`);
   })();
 
+  await test('Registration rejects invalid email format', async () => {
+    const res = await request('/api/auth/register', {
+      method: 'POST',
+      body: {
+        name: 'Bad Email User',
+        email: 'not-an-email',
+        password: 'Password123!'
+      }
+    });
+    assert(res.status === 400, `Expected 400 for invalid email, got ${res.status}`);
+    assert(res.data.message.includes('valid email address'), 'Expected valid email error message');
+  })();
+
   await test('Registration rejects short password (<6 chars)', async () => {
     const res = await request('/api/auth/register', {
       method: 'POST',
@@ -195,6 +209,7 @@ async function run() {
       }
     });
     assert(res.status === 400, `Expected 400, got ${res.status}`);
+    assert(res.data.message === 'Password must be at least 6 characters', `Expected exact password message, got: ${res.data.message}`);
   })();
 
   await test('Security: No demo password bypass on other registered accounts', async () => {
@@ -352,6 +367,20 @@ async function run() {
     assert(res.status === 200, `Expected 200, got ${res.status}`);
     assert(res.data.name === 'Annual Lipid Profile & Glucose Test', 'Document name mismatch');
     assert(res.data.summary.disclaimer.includes('not be considered medical advice'), 'Mandatory disclaimer missing');
+  })();
+
+  await test('AI Service: Deterministic fallback distinguishable with isFallback and source metadata', async () => {
+    const summary = await summarizeDocument({
+      name: 'Comprehensive Metabolic Panel',
+      type: 'Blood Test',
+      description: 'Annual routine panel',
+      contentSnippet: 'Glucose: 95 mg/dL, Creatinine: 0.8 mg/dL'
+    });
+    assert(summary.overview, 'Overview should be present');
+    assert(summary.isFallback !== undefined, 'isFallback flag should be present');
+    assert(summary.source !== undefined, 'source metadata should be present');
+    assert(summary.disclaimer, 'Disclaimer must be present');
+    assert(Array.isArray(summary.termsExplained), 'Terms explained array missing');
   })();
 
   // --- 5. APPOINTMENTS & AI PREPARATION TESTS ---

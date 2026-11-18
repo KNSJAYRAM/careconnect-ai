@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Activity, Lock, Mail, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -9,9 +9,34 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Safely extract and sanitize redirect destination to avoid open-redirect vulnerabilities
+  const redirectParam = searchParams.get('redirect');
+  const getSafeRedirect = (url) => {
+    if (url && typeof url === 'string' && url.startsWith('/') && !url.startsWith('//') && !url.startsWith('/\\')) {
+      return url;
+    }
+    return '/dashboard';
+  };
+  const targetDestination = getSafeRedirect(redirectParam);
+
+  // If already authenticated, redirect away from login
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(targetDestination, { replace: true });
+    }
+  }, [isAuthenticated, navigate, targetDestination]);
+
+  // Alert user if redirected due to expired session
+  useEffect(() => {
+    if (searchParams.get('expired') === 'true') {
+      addToast('Your session has expired. Please sign in again.', 'info');
+    }
+  }, [searchParams, addToast]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,7 +49,7 @@ const Login = () => {
     try {
       await login(email, password);
       addToast('Welcome back to CareConnect AI!', 'success');
-      navigate('/dashboard');
+      navigate(targetDestination, { replace: true });
     } catch (err) {
       console.error(err);
       const errorMsg = err.response?.data?.message || (err.code === 'ERR_NETWORK' ? 'Cannot reach backend server. Please verify backend is running on port 5000.' : 'Login failed. Please check credentials.');

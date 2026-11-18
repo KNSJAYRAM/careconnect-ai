@@ -10,7 +10,12 @@
 - **Platform Type:** Patient-facing Web Application (Full-Stack Responsive SaaS)
 - **Core Philosophy:** **ORGANIZE → UNDERSTAND → PREPARE → TRACK**
 
-CareConnect AI is a centralized patient support platform designed to bridge the gap between complex clinical workflows and everyday patient understanding. The platform provides individuals and caregivers with tools to securely organize health profiles, log ongoing health concerns, upload and receive plain-language summaries of medical documents, generate structured preparation checklists for doctor appointments, and maintain an interactive chronological health timeline.
+CareConnect AI is a centralized patient support platform designed to bridge the gap between complex clinical workflows and everyday patient understanding. The platform is architected around four core stages:
+
+1. **Organize** – Keep patient information and medical documents organized (Health Profile, Medical Documents, Health Concerns).
+2. **Understand** – Convert medical information into simpler language (AI Document Summarization, Healthcare Navigation Assistant).
+3. **Prepare** – Help patients prepare questions and checklists for appointments (AI Appointment Preparation, Consultation Checklists).
+4. **Track** – Maintain follow-ups and healthcare activity timelines (Follow-up Tracker, Chronological Health Timeline, Dynamic Notifications).
 
 ---
 
@@ -24,11 +29,11 @@ In modern healthcare, patient information is heavily fragmented across physical 
 4. **Data Isolation & Anxiety:** Lack of a single chronological record creates anxiety and forces patients to repeatedly recount their entire medical history to every new specialist.
 
 ### 2.2 The Solution
-CareConnect AI addresses these challenges through a unified, patient-first web application:
-- **Centralize:** Securely store personal medical profiles, emergency contacts, blood groups, and allergies.
-- **De-jargonize:** Provide automated, 6-section plain-language summaries of uploaded documents with explicit non-diagnostic safety guardrails.
-- **Consultation Prep:** Synthesize doctor specialty, visit reason, and active concerns into prioritized questions and required document checklists.
-- **Chronological Auditing:** Automatically record every health concern, document upload, and consultation into a consolidated chronological timeline.
+CareConnect AI addresses these challenges through a unified, patient-first web application structured around the four core stages:
+- **1. Organize:** Securely store personal medical profiles (blood group, allergies, existing conditions, emergency contacts), log ongoing health concerns with severity ratings, and upload medical documents.
+- **2. Understand:** Provide automated, 6-section plain-language summaries of uploaded documents with explicit non-diagnostic safety guardrails, explaining medical terms in everyday language.
+- **3. Prepare:** Synthesize doctor specialty, mandatory consultation reason, and active concerns into prioritized questions and required document checklists before clinical appointments.
+- **4. Track:** Automatically record every health concern, document upload, consultation, and follow-up task into a consolidated, interactive chronological health timeline with color-coded overdue detection.
 
 ---
 

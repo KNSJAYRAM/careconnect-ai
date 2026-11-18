@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Activity, User, Mail, Lock, Calendar, Phone, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -15,9 +15,16 @@ const Register = () => {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  const { register } = useAuth();
+  const { register, isAuthenticated } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
+
+  // If already logged in, redirect away from register
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

@@ -13,9 +13,24 @@ The platform follows a **Client-Server Architecture** utilizing a Single Page Ap
 ## 2. High-Level System Architecture
 
 The system consists of three primary tiers:
-1. **Presentation Tier (Client):** Responsive React SPA running in the patient's browser, managing state, client-side routing, and JWT storage.
-2. **Application Tier (Server):** Express REST API server providing authentication, route handling, input validation, and business logic.
-3. **Data & AI Tier (Persistence & Intelligence):** MongoDB database / In-Memory storage engine coupled with the Modular AI Service (Google Gemini 1.5 Flash REST integration with deterministic smart mock engine).
+
+### Tier 1: Presentation Tier (Frontend)
+- **Framework:** React 19 Single Page Application (SPA)
+- **Build Tool & Dev Server:** Vite (with `/api` proxy targeting backend port 5000)
+- **Routing:** React Router DOM v6 (declarative client-side routing, protected dashboard layout routes, and safe query redirect preserving)
+- **HTTP Client:** Axios (configured with request interceptors for automatic Bearer JWT injection and response interceptors for 401 handling)
+
+### Tier 2: Application Tier (Backend)
+- **Runtime:** Node.js (v18+)
+- **Web Framework:** Express.js (v4.19) implementing RESTful API architecture
+- **Authentication:** Stateless JSON Web Token (JWT) verification and bcryptjs password hashing
+- **Data Modeling:** Mongoose ODM schemas with field validation and pre-save hooks
+- **Security & Middleware:** Helmet (secure HTTP headers), CORS (whitelisted origins), Morgan (HTTP logger), Multer (file uploads), centralized error middleware
+
+### Tier 3: Database & External Integration Tier
+- **Primary Database:** MongoDB NoSQL document store with indexing for fast multi-tenant queries
+- **Fallback Database:** Built-in In-Memory Database engine (`inMemoryDb.js`) for instant zero-configuration evaluation if MongoDB is offline
+- **AI Integration:** Google Gemini 1.5 Flash REST API with 8-second request timeout (`AbortController`), non-diagnostic prompt guardrails, and deterministic fallback engine
 
 ```mermaid
 flowchart TD
